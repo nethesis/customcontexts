@@ -66,6 +66,30 @@ function customcontexts_hookGet_config($engine) {
 											ON DUPLICATE KEY UPDATE sort = "'.($i+100).'", missing = "0"';
 							$db->query($sql);
 						} else {
+							$sql = 'SELECT COUNT(*) FROM customcontexts_includes_list WHERE context = ? AND include = ?';
+                                                        $sth = $db->prepare($sql);
+							$sth->execute(array($section,$include['include']));
+							$count = $sth->fetchAll()[0][0];
+							if ($count == 0) {
+								$sql = "SELECT DISTINCT context FROM customcontexts_includes WHERE context != 'hotel'";
+								$sth = $db->prepare($sql);
+								$sth->execute([]);
+								$qm = array();
+								$values = array();
+								while ($context = $sth->fetchColumn()) {
+									$qm[] = '(?,?,?,?)';
+									$values[] = $context;
+									$values[] = $include['include'];
+									$values[] = NULL;
+									$values[] = $i;
+								}
+								if (!empty($qm) && !empty($values)) {
+									$sql = "INSERT INTO customcontexts_includes (context,include,timegroupid,sort) VALUES ";
+									$sql .= implode(',',$qm);
+									$sth = $db->prepare($sql);
+									$sth->execute(array_values($values));
+								}
+							}
 							$sql = 'UPDATE customcontexts_includes_list SET missing = "0", sort = "'.$i.'"
 											WHERE context = "'.$section.'" and include = "'.$include['include'].'"';
 							$db->query($sql);
