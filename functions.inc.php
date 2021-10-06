@@ -84,7 +84,7 @@ function customcontexts_hookGet_config($engine) {
 									$values[] = $i;
 								}
 								if (!empty($qm) && !empty($values)) {
-									$sql = "INSERT INTO customcontexts_includes (context,include,timegroupid,sort) VALUES ";
+									$sql = "INSERT IGNORE INTO customcontexts_includes (context,include,timegroupid,sort) VALUES ";
 									$sql .= implode(',',$qm);
 									$sth = $db->prepare($sql);
 									$sth->execute(array_values($values));
